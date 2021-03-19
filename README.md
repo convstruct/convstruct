@@ -98,17 +98,17 @@ cs.draw(4)
 <br>
 
 ## State of Convstruct
-####convstruct.learn():
+#### convstruct.learn():
 - IICC has provided a fast solution for clustering unsupervised images, however as this is a recent paper the hyper parameters are still being researched.
 - Classifying with IICC on unsupervised images is still a work-in-progress as this tends to require semi-supervision, whereas convstruct is fully unsupervised.
 - Using the second layer output of IICC as part of the loss function for the GAN-WP is an experimental concept.
 
-####convstruct.live():
+#### convstruct.live():
 - The time it takes to complete the live() function is a major challenge.
 - Progress outputs from the quick training sessions lead to reasonable shapes, however even at a tenth of the epochs used to train the final model still takes a while to complete.
 - The image size is reduced as a way to speed up the sessions in the live() function, however it could be possible that reducing the size adds too much noise to the model classifier.
 
-####convstruct.draw():
+#### convstruct.draw():
 - There is a bottleneck between epochs as seen in the gpu usage throughout the session on certain hardware.
 
 ## Future work
