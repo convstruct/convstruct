@@ -109,7 +109,7 @@ cs.draw(4)
 - The image size is reduced as a way to speed up the sessions in the live() function, however it could be possible that reducing the size adds too much noise to the model classifier.
 
 #### convstruct.draw():
-- There is a bottleneck between epochs as seen in the gpu usage throughout the session on certain hardware.
+- To get the best results a long training session is currently needed. Reducing this in any way would allow for more models to be tried.
 
 ## Future work
 - Removing the challenges facing convstruct.learn() by researching or replacing IICC completely with a more suitable solution.
