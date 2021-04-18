@@ -102,36 +102,37 @@ def build_inputs(args, input_type, num_input, growth, stage):
     return get_batch
 
 
-def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, growth=None):
+def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, growth, epoch=None):
     """
     :param args: dictionary of arguments.
     :param sess: tensorflow active session.
     :param get_ground_truth_batch: create batch of ground truth images. 
     :param get_starting_points_batch: create batch of starting point images.
     :param growth: dictionary of info on input and output data.
+    :param epoch: current epoch.
     :return: This function returns preprocessed batches for the current training loop.
     """
     epochs_starting_points, epochs_ground_truth, epochs_augmented = dict(), dict(), dict()
     start = time.time()
     ground_truth_batch = sess.run(get_ground_truth_batch)
     performance_tracker(start, 'ground truth batch completed in %fs')
-    if args['indir'] and growth is not None:
+    if args['indir'] and epoch is None:
         start = time.time()
         starting_points_batch = sess.run(get_starting_points_batch)
         performance_tracker(start, 'starting point batch completed in %fs')
         for i in range(args['num_in']):
             epochs_starting_points['%d' % i] = starting_points_batch[i] if args['num_in'] > 1 else starting_points_batch
-    elif growth is not None:
+    elif epoch is None:
         for i in range(args['num_in']):
-            epochs_starting_points['%d' % i] = np.random.rand(growth["batch_size"], 100).astype(np.float32) * 255.0
+            epochs_starting_points['%d' % i] = np.random.rand(growth['batch_size'], 100).astype(np.float32) * 255.0
     for i in range(args['num_comp']):
-        epochs_ground_truth['%d' % i] = ground_truth_batch[i] if args['num_comp'] > 1 else ground_truth_batch
-        if growth is None:
-            augmented_batch = augment_batch(ground_truth_batch[i] if args['num_comp'] > 1 else ground_truth_batch)
+        epochs_ground_truth['%d' % i] = (np.random.rand(16, growth['y_size'], growth['x_size'], 3).astype(np.float32) * 255) if epoch is not None and epoch % 5 == 0 else (ground_truth_batch[i] if args['num_comp'] > 1 else ground_truth_batch)
+        if epoch is not None:
+            augmented_batch = augment_batch(epochs_ground_truth['%d' % i])
             epochs_augmented['%d' % i] = augmented_batch
     epochs_ground_truth = epochs_ground_truth if args['num_comp'] > 1 else epochs_ground_truth['0']
-    epochs_starting_points = (epochs_starting_points if args['num_in'] > 1 else epochs_starting_points['0']) if growth is not None else 0
-    epochs_augmented = (epochs_augmented if len(epochs_augmented) > 1 else epochs_augmented['0']) if growth is None else 0
+    epochs_starting_points = (epochs_starting_points if args['num_in'] > 1 else epochs_starting_points['0']) if epoch is None else 0
+    epochs_augmented = (epochs_augmented if len(epochs_augmented) > 1 else epochs_augmented['0']) if epoch is not None else 0
     return epochs_ground_truth, epochs_starting_points, epochs_augmented
 
 
@@ -227,7 +228,7 @@ def convstruct_start(args, location):
         specifications['gpus'] = 1
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         specifications['max_memory_0'], specifications['max_memory'] = 6000000000, 6000000000
-    specifications['total_filters'], specifications['max_module_size'], specifications['max_filter_size'] = ((2048, 45, 512) if specifications['max_memory'] > 17000000000 else (1536, 36, 512)) if specifications['max_memory'] > 7000000000 else (1024, 27, 512)
+    specifications['total_filters'], specifications['max_module_size'], specifications['max_filter_size'] = ((2560, 45, 512) if specifications['max_memory'] > 17000000000 else (1536, 36, 512)) if specifications['max_memory'] > 7000000000 else (1024, 27, 256)
     if path.exists(os.path.join(os.path.join(location, 'draw'), 'growth.npy')):
         growth = np.load(os.path.join(os.path.join(location, 'draw'), 'growth.npy')).flat[0]
     elif path.exists(os.path.join(location, 'growth.npy')):

@@ -529,9 +529,10 @@ class Building:
         tf.reset_default_graph()
         iicc_learning = tf.placeholder(tf.bool, name='iicc_learning')
         ground = multi_placeholders(self.args['num_comp'], 'ground_truth_images')
+        noise = multi_placeholders(self.args['num_comp'], 'noise_images')
         augmented = multi_placeholders(self.args['num_comp'], 'augmented_images')
-        true_pair, fake_pair = self.iicc.cluster(ground, iicc_learning, self.growth['x_size'] if stage != 2 else self.growth['small_x_size']), self.iicc.cluster(augmented, iicc_learning, self.growth['x_size'] if stage != 2 else self.growth['small_x_size'])
-        true_logits, fake_logits = [tf.argmax(self.iicc.classifier_out(true_pair, 20, 'true' if stage != 2 else 'over' + str(i + 1)), axis=1) for i in range(5)], [tf.argmax(self.iicc.classifier_out(fake_pair, 20, 'true' if stage != 2 else 'over' + str(i + 1)), axis=1) for i in range(5)]
+        true_pair, fake_pair, noise_pair = self.iicc.cluster(ground, iicc_learning, self.growth['small_x_size']), self.iicc.cluster(augmented, iicc_learning, self.growth['small_x_size']), self.iicc.cluster(noise, iicc_learning, self.growth['small_x_size'])
+        true_logits, fake_logits, noise_logits = [tf.argmax(self.iicc.classifier_out(true_pair, 20, 'over' + str(i + 1)), axis=1) for i in range(5)], [tf.argmax(self.iicc.classifier_out(fake_pair, 20, 'over' + str(i + 1)), axis=1) for i in range(5)], [tf.argmax(self.iicc.classifier_out(noise_pair, 20, 'over' + str(i + 1)), axis=1) for i in range(5)]
         with tf.Session(config=tf_config_setup()) as sess:
             start = time.time()
             sess.run(tf.local_variables_initializer())
@@ -544,19 +545,23 @@ class Building:
             performance_tracker(start, 'Saver completed in %fs')
             for gpu in range(self.specifications['gpus']):
                 if not struct['nan_found']:
-                    gpu_feed, eval_list = {iicc_learning: False}, []
+                    gpu_feed, eval_list, noise_list = {iicc_learning: False}, [], []
                     for i in range(self.args['num_comp']):
                         eval_list.append((eval_feed['output_%d' % gpu][i] if self.args['num_comp'] > 1 else eval_feed['output_%d' % gpu]) + 1.0 / 2.0)
-                    gpu_feed = multi_dict_feed(self.args, gpu_feed, augmented, eval_list if self.args['num_comp'] > 1 else eval_list[0], ground, eval_feed['comp_%d' % gpu], '2_end')
+                        noise_list.append((np.random.rand(16, self.growth['small_y_size'], self.growth['small_x_size'], 3).astype(np.float32) * 255) + 1.0 / 2.0)
+                    main_feed = multi_dict_feed(self.args, gpu_feed, augmented, eval_list if self.args['num_comp'] > 1 else eval_list[0], ground, eval_feed['comp_%d' % gpu], '2_end')
+                    noise_feed = multi_dict_feed(self.args, gpu_feed, noise, noise_list if self.args['num_comp'] > 1 else noise_list[0], ground, eval_feed['comp_%d' % gpu], '2_end')
                     start = time.time()
-                    true_hat, fake_hat = sess.run([true_logits, fake_logits], gpu_feed)
+                    true_hat, fake_hat = sess.run([true_logits, fake_logits], main_feed)
+                    noise_hat = sess.run(noise_logits, noise_feed)
                     performance_tracker(start, 'Reflection %d session completed in %fs', gpu)
                     start, hat_score = time.time(), 0
                     for i in range(5):
-                        true_val, fake_val = set(sorted(true_hat[i])), set(sorted(fake_hat[i]))
-                        divide_true, divide_fake = len(true_val), len(fake_val)
+                        true_val, fake_val, noise_val = set(sorted(true_hat[i])), set(sorted(fake_hat[i])), set(sorted(noise_hat[i]))
                         hat_check = true_val & fake_val
-                        hat_score += (5 * len(hat_check)) / divide_fake
+                        noise_check = noise_val & fake_val
+                        hat_score += (2 * len(hat_check)) / len(fake_val)
+                        hat_score -= (4 * len(noise_check)) / len(fake_val)
                     learn_score = hat_score / 5
                 else:
                     learn_score = 0
@@ -739,7 +744,7 @@ class Building:
             total_epochs, epoch, eval_feed = ((self.growth['initial_length'] if stage == 2 else self.growth['full_length']) if stage != 1 else self.growth['iicc_length']) if stage != 4 else 1, self.growth['saved_epoch'] if stage != 4 else 0, dict()
             while True:
                 if epoch < total_epochs:
-                    epochs_ground_truth, epochs_starting_points, epochs_augmented = setup_batch(self.args, sess, get_ground_truth_batch, get_starting_point_batch, self.growth if stage != 1 else None)
+                    epochs_ground_truth, epochs_starting_points, epochs_augmented = setup_batch(self.args, sess, get_ground_truth_batch, get_starting_point_batch, self.growth, epoch if stage == 1 else None)
                     epochs_starting_points, epochs_ground_truth, epochs_augmented = preprocess(self.args, epochs_starting_points, epochs_ground_truth, epochs_augmented, stage)
                     epoch_feed = multi_dict_feed(self.args, epoch_feed, augmented if stage == 1 else graph['starting_points'], epochs_augmented if stage == 1 else epochs_starting_points, truth, epochs_ground_truth, stage)
                     struct['nan_found'], epoch = self.stage_ops(sess, epoch, eval_feed, epochs_ground_truth, struct, graph, models, epoch_feed, total_epochs, stage)
