@@ -107,6 +107,7 @@ cs.draw(4)
 - The time it takes to complete the live() function is a major challenge.
 - Progress outputs from the quick training sessions lead to reasonable shapes, however even at a tenth of the epochs used to train the final model still takes a while to complete.
 - The image size is reduced as a way to speed up the sessions in the live() function, however it could be possible that reducing the size adds too much noise to the model classifier.
+- The discriminator training interations from WGAN-GP paper uses 5, whereas to save time, Convstruct uses only 2. This likely reduces the image output quality.
 
 #### convstruct.draw():
 - To get the best results a long training session is currently needed. Reducing this in any way would allow for more models to be tried.
