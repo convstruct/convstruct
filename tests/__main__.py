@@ -2,7 +2,9 @@ import sys
 import os
 current_file_path = os.path.dirname(__file__).split("/")[:-1]
 sys.path.append("/".join(current_file_path))
-from convstruct.libs.art import *
+from convstruct.libs.util import *
+from convstruct.libs.iicc import IICC
+from convstruct.libs.building import Building
 import shutil
 import unittest
 
