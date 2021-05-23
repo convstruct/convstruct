@@ -27,7 +27,7 @@ class Graphing:
         self.y_dim = growth['y_size'] if stage != 2 or args['indir'] else growth['small_y_size']
         self.x_dim = growth['x_size'] if stage != 2 or args['indir'] else growth['small_x_size']
 
-    def magic(self, magic_input, num_feed, discriminator=None):
+    def createGraph(self, magic_input, num_feed, discriminator=None):
         """
         :param magic_input: input data into a topology.
         :param num_feed: represents number of inputs or number of outputs of a topology.
@@ -93,7 +93,7 @@ class Graphing:
             magic_output = module(self.args, self.gpu, magic_input, self.learning, self.split, self.factor)
             return magic_output
 
-    def magic_loss(self, generated_logits, ground_logits=None, sum_hat=None, sum_logits=None, true_hat=None, fake_hat=None):
+    def createLoss(self, generated_logits, ground_logits=None, sum_hat=None, sum_logits=None, true_hat=None, fake_hat=None):
         """
         :param generated_logits: generator output's logits from discriminator.
         :param ground_logits: ground truth logits from discriminator.
@@ -114,7 +114,7 @@ class Graphing:
             total_loss = gan + gradient_penalty + iicc2
         return total_loss
 
-    def optimize(self, loss):
+    def createOptimizer(self, loss):
         """
         :param loss: the module loss.
         :return: This function returns the optimizer of a module.

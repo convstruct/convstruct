@@ -20,7 +20,7 @@ old_v = tf.compat.v1.logging.get_verbosity()
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 
-def args_parser():
+def argsParser():
     """
     :return: This function returns arguments to setup the Convstruct class.
     """
@@ -36,7 +36,7 @@ def args_parser():
     return args
 
 
-def process_image(length, stage, feed, width, height):
+def processImage(length, stage, feed, width, height):
     """
     :param length: feed length.
     :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
@@ -56,7 +56,7 @@ def process_image(length, stage, feed, width, height):
     return image_decoded
 
 
-def build_input_pipeline(args, filenames, growth, random_seed, input_type, num_input, stage, shuffle=True, num_threads=4):
+def buildInputPipeline(args, filenames, growth, random_seed, input_type, num_input, stage, shuffle=True, num_threads=4):
     """
     :param args: dictionary of arguments.
     :param filenames: list of file names.
@@ -78,14 +78,14 @@ def build_input_pipeline(args, filenames, growth, random_seed, input_type, num_i
             train_list.append(files)
     for i in range(num_input):
         filename_queue = tf.train.string_input_producer(train_list if args['num_type'] == 'random' else train_list[i], shuffle=shuffle if args['num_type'] == 'random' else False)
-        image = process_image(len(filenames), stage, filename_queue.dequeue(), growth['x_size'] if stage != 2 or args['indir'] else growth['small_x_size'], growth['y_size'] if stage != 2 or args['indir'] else growth['small_y_size'])
+        image = processImage(len(filenames), stage, filename_queue.dequeue(), growth['x_size'] if stage != 2 or args['indir'] else growth['small_x_size'], growth['y_size'] if stage != 2 or args['indir'] else growth['small_y_size'])
         image_batched = tf.train.batch([image], batch_size=16 if stage == 1 else growth["batch_size"], num_threads=num_threads, capacity=10 * (16 if stage == 1 else growth["batch_size"]))
         image_batch.append(image_batched)
-    performance_tracker(start, 'Ground truth pipeline completed in %fs' if input_type == args['compdir'] else 'Input pipeline completed in %fs')
+    performanceTracker(start, 'Ground truth pipeline completed in %fs' if input_type == args['compdir'] else 'Input pipeline completed in %fs')
     return image_batch if num_input > 1 else image_batch[0]
 
 
-def build_inputs(args, input_type, num_input, growth, stage):
+def buildInputs(args, input_type, num_input, growth, stage):
     """
     :param args: dictionary of arguments.
     :param input_type: the folder location of ground truth images or starting points.
@@ -97,12 +97,12 @@ def build_inputs(args, input_type, num_input, growth, stage):
     start = time.time()
     random_seed = random.randrange(1000)
     feed = np.array(glob.glob(os.path.join(input_type, '**', '*.*'), recursive=True))
-    get_batch = build_input_pipeline(args, feed, growth, random_seed, input_type, num_input, stage)
-    performance_tracker(start, 'Build inputs completed in %fs')
+    get_batch = buildInputPipeline(args, feed, growth, random_seed, input_type, num_input, stage)
+    performanceTracker(start, 'Build inputs completed in %fs')
     return get_batch
 
 
-def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, growth, epoch=None):
+def setupBatch(args, sess, get_ground_truth_batch, get_starting_points_batch, growth, epoch=None):
     """
     :param args: dictionary of arguments.
     :param sess: tensorflow active session.
@@ -115,11 +115,11 @@ def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, g
     epochs_starting_points, epochs_ground_truth, epochs_augmented = dict(), dict(), dict()
     start = time.time()
     ground_truth_batch = sess.run(get_ground_truth_batch)
-    performance_tracker(start, 'ground truth batch completed in %fs')
+    performanceTracker(start, 'ground truth batch completed in %fs')
     if args['indir'] and epoch is None:
         start = time.time()
         starting_points_batch = sess.run(get_starting_points_batch)
-        performance_tracker(start, 'starting point batch completed in %fs')
+        performanceTracker(start, 'starting point batch completed in %fs')
         for i in range(args['num_in']):
             epochs_starting_points['%d' % i] = starting_points_batch[i] if args['num_in'] > 1 else starting_points_batch
     elif epoch is None:
@@ -128,7 +128,7 @@ def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, g
     for i in range(args['num_comp']):
         epochs_ground_truth['%d' % i] = (np.random.rand(16, growth['y_size'], growth['x_size'], 3).astype(np.float32) * 255) if epoch is not None and epoch % 5 == 0 else (ground_truth_batch[i] if args['num_comp'] > 1 else ground_truth_batch)
         if epoch is not None:
-            augmented_batch = augment_batch(epochs_ground_truth['%d' % i])
+            augmented_batch = augmentBatch(epochs_ground_truth['%d' % i])
             epochs_augmented['%d' % i] = augmented_batch
     epochs_ground_truth = epochs_ground_truth if args['num_comp'] > 1 else epochs_ground_truth['0']
     epochs_starting_points = (epochs_starting_points if args['num_in'] > 1 else epochs_starting_points['0']) if epoch is None else 0
@@ -136,7 +136,7 @@ def setup_batch(args, sess, get_ground_truth_batch, get_starting_points_batch, g
     return epochs_ground_truth, epochs_starting_points, epochs_augmented
 
 
-def setup_mini_batch(feed, specifications):
+def setupMiniBatch(feed, specifications):
     """
     :param feed: module and model parameter feed.
     :param specifications: dictionary of convstruct settings and system details.
@@ -154,7 +154,7 @@ def setup_mini_batch(feed, specifications):
     return quality_batch, teacher_batch
 
 
-def build_log_dir(main_name, path_name=None, second_path_name=None):
+def buildLogDir(main_name, path_name=None, second_path_name=None):
     """
     :param main_name: top folder name.
     :param path_name: child folder name.
@@ -172,7 +172,7 @@ def build_log_dir(main_name, path_name=None, second_path_name=None):
     return log_path
 
 
-def create_pair(image):
+def createPair(image):
     """
     :param image: image data to create a pair from.
     :return: This function returns a transformed pair from image data provided, by sampling, rotating and cropping.
@@ -190,7 +190,7 @@ def create_pair(image):
     return new_pair
 
 
-def augment_batch(batch):
+def augmentBatch(batch):
     """
     :param batch: batch of images.
     :return: This function returns a batch of augmented pairs.
@@ -198,12 +198,12 @@ def augment_batch(batch):
     start = time.time()
     augmented_pair = np.zeros((batch.shape[0], batch.shape[1], batch.shape[2], 3))
     for i in range(batch.shape[0]):
-        augmented_pair[i, :, :, :] = create_pair(batch[i, :, :, :])
-    performance_tracker(start, 'Augment batch completed in %fs')
+        augmented_pair[i, :, :, :] = createPair(batch[i, :, :, :])
+    performanceTracker(start, 'Augment batch completed in %fs')
     return augmented_pair
 
 
-def convstruct_start(args, location):
+def startSession(args, location):
     """
     :param args: dictionary of arguments.
     :param location: path of directory to save weights and summaries to.
@@ -220,7 +220,7 @@ def convstruct_start(args, location):
                 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
             else:
                 os.environ['CUDA_VISIBLE_DEVICES'] += ',%d' % gpu
-            specifications['max_memory_%d' % gpu], specifications['max_memory'] = get_gpu_memory(gpu), get_gpu_memory(gpu) if (specifications['max_memory'] > get_gpu_memory(gpu) or gpu == 0) else specifications['max_memory']
+            specifications['max_memory_%d' % gpu], specifications['max_memory'] = getGpuMemory(gpu), getGpuMemory(gpu) if (specifications['max_memory'] > getGpuMemory(gpu) or gpu == 0) else specifications['max_memory']
         local_devices = device_lib.list_local_devices()
         gpus = [x.name for x in local_devices if x.device_type == 'GPU']
         specifications['gpus'] = len(gpus)
@@ -244,11 +244,11 @@ def convstruct_start(args, location):
         growth['small_x_size'], growth['small_y_size'] = growth['x_size'] // 2 // 2, growth['y_size'] // 2 // 2
         growth['scaling'] = (5 if growth['x_size'] == 256 else (4 if growth['x_size'] == 128 else 3)) if not args['indir'] else 2
         image.close()
-    performance_tracker(start, 'Start preparations completed in %fs')
+    performanceTracker(start, 'Start preparations completed in %fs')
     return specifications, growth
 
 
-def split_random(a, n):
+def splitRandom(a, n):
     """
     :param a: main number.
     :param n: number to split main number by.
@@ -266,7 +266,7 @@ def split_random(a, n):
     return pieces
 
 
-def multi_placeholders(count, ph_name, noise=1):
+def multiPlaceholders(count, ph_name, noise=1):
     """
     :param count: number of placeholders to return.
     :param ph_name: name of placeholder.
@@ -279,7 +279,7 @@ def multi_placeholders(count, ph_name, noise=1):
     return placeholder if count > 1 else placeholder['0']
 
 
-def multi_dict_feed(args, dict_feed, in_ph, in_feed, comp_ph, comp_feed, stage):
+def multiDictFeed(args, dict_feed, in_ph, in_feed, comp_ph, comp_feed, stage):
     """
     :param args: dictionary of arguments.
     :param dict_feed: epoch feed being returned.
@@ -307,7 +307,7 @@ def multi_dict_feed(args, dict_feed, in_ph, in_feed, comp_ph, comp_feed, stage):
     return dict_feed
 
 
-def calculate_target(qualities):
+def calculateTarget(qualities):
     """
     :param qualities: module quality scores.
     :return: Returns target quality score.
@@ -319,7 +319,7 @@ def calculate_target(qualities):
     return target
 
 
-def performance_tracker(start, string, index=None):
+def performanceTracker(start, string, index=None):
     """
     :param start: time.time() start variable.
     :param string: message to be used in logging.
@@ -332,7 +332,7 @@ def performance_tracker(start, string, index=None):
     return
 
 
-def tf_config_setup():
+def tfConfigSetup():
     """
     :return: Returns tensorflow configuration.
     """
@@ -342,11 +342,11 @@ def tf_config_setup():
     return tf_config
 
 
-def create_log(location, string):
+def createLog(location, string):
     """
     :param location: location to create log in.
     :param string: log name.
-    :return: Returns
+    :return: Returns a created log.
     """
     for handler in logging.root.handlers[:]:
         handler.close()
@@ -356,7 +356,7 @@ def create_log(location, string):
     return
 
 
-def get_gpu_memory(gpu):
+def getGpuMemory(gpu):
     """
     :param gpu: the gpu index.
     :return: Returns the total memory of the indexed Nvidia GPU using nvidia-smi.
@@ -381,7 +381,7 @@ def initialization(sess):
     start = time.time()
     sess.run(tf.local_variables_initializer())
     sess.run(tf.global_variables_initializer())
-    performance_tracker(start, 'Initialization completed in %fs')
+    performanceTracker(start, 'Initialization completed in %fs')
     return coord, threads
 
 
