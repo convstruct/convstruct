@@ -4,14 +4,14 @@ from .util import *
 class Graphing:
     def __init__(self, args, gpu, memory, learning, factor, growth, split, stage, strength=10):
         """
-        :param args: dictionary of arguments.
-        :param gpu: the gpu index.
-        :param memory: changing string for the tf.variable scope of the current module.
-        :param learning: boolean for enabling or disabling batch normalization.
-        :param factor: dictionary holding all module/model topology parameters.
-        :param growth: dictionary of info on input, output data and progress.
-        :param split: shape of module topology.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param args: dict, dictionary of arguments.
+        :param gpu: int, the gpu index.
+        :param memory: str, changing string for the tf.variable scope of the current module.
+        :param learning: tf.bool, boolean for enabling or disabling batch normalization.
+        :param factor: dict, dictionary holding all module/model topology parameters.
+        :param growth: dict, dictionary of info on input, output data and progress.
+        :param split: int list, shape of module topology.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :param strength: value to set strength of the gradient penalty.
         """
         self.args = args
@@ -29,19 +29,19 @@ class Graphing:
 
     def createGraph(self, magic_input, num_feed, discriminator=None):
         """
-        :param magic_input: input data into a topology.
-        :param num_feed: represents number of inputs or number of outputs of a topology.
-        :param discriminator: value to indicate if the model is a generator (None) or a discriminator (Any).
+        :param magic_input: tf.placeholder, input data into a topology.
+        :param num_feed: int, represents number of inputs or number of outputs of a topology.
+        :param discriminator: int, optional, value to indicate if the model is a generator (None) or a discriminator (Any).
         :return: This function returns the high level topology for generators and discriminators.
         """
         def module(args, gpu, module_input, learning, split, factor):
             """
-            :param args: dictionary of arguments.
-            :param gpu: the gpu index.
-            :param module_input: input data to the module.
-            :param learning: boolean for enabling or disabling batch normalization.
-            :param split: shape of module topology.
-            :param factor: dictionary holding all module/model topology parameters.
+            :param args: dict, dictionary of arguments.
+            :param gpu: int, the gpu index.
+            :param module_input: tf.placeholder, input data to the module.
+            :param learning: tf.bool, boolean for enabling or disabling batch normalization.
+            :param split: int list, shape of module topology.
+            :param factor: dict, dictionary holding all module/model topology parameters.
             :return: This function returns the module topology for generators and discriminators.
             """
             conv_type, layers, activation, multi_output = tf.layers.conv2d if discriminator is not None else tf.layers.conv2d_transpose, dict(), tf.nn.leaky_relu if discriminator is not None else tf.nn.relu, []
@@ -95,12 +95,12 @@ class Graphing:
 
     def createLoss(self, generated_logits, ground_logits=None, sum_hat=None, sum_logits=None, true_hat=None, fake_hat=None):
         """
-        :param generated_logits: generator output's logits from discriminator.
-        :param ground_logits: ground truth logits from discriminator.
-        :param sum_hat: sum of ground and generated output.
-        :param sum_logits: logits of the sum of ground and generated output.
-        :param true_hat: logits from comparison data classified using convstruct.learn().
-        :param fake_hat: logits from generated data classified using convstruct.learn().
+        :param generated_logits: float array, generator output's logits from discriminator.
+        :param ground_logits: float array, optional, ground truth logits from discriminator.
+        :param sum_hat: float array, optional, sum of ground and generated output.
+        :param sum_logits: float array, optional, logits of the sum of ground and generated output.
+        :param true_hat: float array, optional, logits from comparison data classified using convstruct.learn().
+        :param fake_hat: float array, optional, logits from generated data classified using convstruct.learn().
         :return: This function returns the loss of a module.
         """
         if ground_logits is None:
@@ -116,7 +116,7 @@ class Graphing:
 
     def createOptimizer(self, loss):
         """
-        :param loss: the module loss.
+        :param loss: tf.reduce_mean(), the module loss.
         :return: This function returns the optimizer of a module.
         """
         ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope=self.memory)

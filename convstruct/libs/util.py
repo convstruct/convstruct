@@ -38,11 +38,11 @@ def argsParser():
 
 def processImage(length, stage, feed, width, height):
     """
-    :param length: feed length.
-    :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
-    :param feed: image/s location.
-    :param width: width of image.
-    :param height: height of image.
+    :param length: int, feed length.
+    :param stage: str, value indicator to identify between learn(1), live(2), and draw(3/4).
+    :param feed: str, image/s location.
+    :param width: int, width of image.
+    :param height: int, height of image.
     :return: This function returns the processed image data and resizes if required.
     """
     image_string = tf.read_file(feed)
@@ -58,15 +58,15 @@ def processImage(length, stage, feed, width, height):
 
 def buildInputPipeline(args, filenames, growth, random_seed, input_type, num_input, stage, shuffle=True, num_threads=4):
     """
-    :param args: dictionary of arguments.
-    :param filenames: list of file names.
-    :param growth: dictionary of info on input and output data.
-    :param random_seed: random value to feed np.random.seed.
-    :param input_type: the folder location of ground truth images or starting points.
-    :param num_input: the number of ground truth or starting points being fed.
-    :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
-    :param shuffle: randomize batches.
-    :param num_threads: tf.train.batch threads to use.
+    :param args: dict, dictionary of arguments.
+    :param filenames: str array, list of file names.
+    :param growth: dict, dictionary of info on input and output data.
+    :param random_seed: int, random value to feed np.random.seed.
+    :param input_type: str, the folder location of ground truth images or starting points.
+    :param num_input: int, the number of ground truth or starting points being fed.
+    :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
+    :param shuffle: bool, randomize batches.
+    :param num_threads: int, tf.train.batch threads to use.
     :return: This function returns a tensor batch queue from files provided.
     """
     start = time.time()
@@ -87,11 +87,11 @@ def buildInputPipeline(args, filenames, growth, random_seed, input_type, num_inp
 
 def buildInputs(args, input_type, num_input, growth, stage):
     """
-    :param args: dictionary of arguments.
-    :param input_type: the folder location of ground truth images or starting points.
-    :param num_input: the number of ground truth or starting points being fed.
-    :param growth: dictionary of info on input and output data.
-    :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+    :param args: dict, dictionary of arguments.
+    :param input_type: str, the folder location of ground truth images or starting points.
+    :param num_input: int, the number of ground truth or starting points being fed.
+    :param growth: dict, dictionary of info on input and output data.
+    :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
     :return: This function sets a seed to randomly select filenames and sends filenames to be built into tensors.
     """
     start = time.time()
@@ -104,12 +104,12 @@ def buildInputs(args, input_type, num_input, growth, stage):
 
 def setupBatch(args, sess, get_ground_truth_batch, get_starting_points_batch, growth, epoch=None):
     """
-    :param args: dictionary of arguments.
-    :param sess: tensorflow active session.
-    :param get_ground_truth_batch: create batch of ground truth images. 
-    :param get_starting_points_batch: create batch of starting point images.
-    :param growth: dictionary of info on input and output data.
-    :param epoch: current epoch.
+    :param args: dict, dictionary of arguments.
+    :param sess: tf.session(), tensorflow active session.
+    :param get_ground_truth_batch: tf.train.batch, create batch of ground truth images.
+    :param get_starting_points_batch: tf.train.batch, create batch of starting point images.
+    :param growth: dict, dictionary of info on input and output data.
+    :param epoch: int, optional, current epoch.
     :return: This function returns preprocessed batches for the current training loop.
     """
     epochs_starting_points, epochs_ground_truth, epochs_augmented = dict(), dict(), dict()
@@ -138,8 +138,8 @@ def setupBatch(args, sess, get_ground_truth_batch, get_starting_points_batch, gr
 
 def setupMiniBatch(feed, specifications):
     """
-    :param feed: module and model parameter feed.
-    :param specifications: dictionary of convstruct settings and system details.
+    :param feed: dict, module and model parameter feed.
+    :param specifications: dict, dictionary of convstruct settings and system details.
     :return: This function returns a mini batch of module quality scores and their corresponding parameters.
     """
     random.shuffle(feed)
@@ -156,10 +156,10 @@ def setupMiniBatch(feed, specifications):
 
 def buildLogDir(main_name, path_name=None, second_path_name=None):
     """
-    :param main_name: top folder name.
-    :param path_name: child folder name.
-    :param second_path_name: child within a child folder name.
-    :return: Returns path to main folder and creates the folder.
+    :param main_name: str, top folder name.
+    :param path_name: str, child folder name.
+    :param second_path_name: str, child within a child folder name.
+    :return: Returns path to main folder and creates the folder if it doesn't exist.
     """
     log_path = main_name
     if second_path_name is not None:
@@ -174,7 +174,7 @@ def buildLogDir(main_name, path_name=None, second_path_name=None):
 
 def createPair(image):
     """
-    :param image: image data to create a pair from.
+    :param image: RGB img, image data to create a pair from.
     :return: This function returns a transformed pair from image data provided, by sampling, rotating and cropping.
     """
     output = np.copy(np.array(image))
@@ -192,7 +192,7 @@ def createPair(image):
 
 def augmentBatch(batch):
     """
-    :param batch: batch of images.
+    :param batch: list, batch of images.
     :return: This function returns a batch of augmented pairs.
     """
     start = time.time()
@@ -205,8 +205,8 @@ def augmentBatch(batch):
 
 def startSession(args, location):
     """
-    :param args: dictionary of arguments.
-    :param location: path of directory to save weights and summaries to.
+    :param args: dict, dictionary of arguments.
+    :param location: str, path of directory to save weights and summaries to.
     :return: Creates/loads specifications dictionary and growth dictionary.
     """
     start = time.time()
@@ -250,8 +250,8 @@ def startSession(args, location):
 
 def splitRandom(a, n):
     """
-    :param a: main number.
-    :param n: number to split main number by.
+    :param a: int, main number.
+    :param n: int, number to split main number by.
     :return: Returns simple split of a into n pieces.
     """
     pieces = []
@@ -268,9 +268,9 @@ def splitRandom(a, n):
 
 def multiPlaceholders(count, ph_name, noise=1):
     """
-    :param count: number of placeholders to return.
-    :param ph_name: name of placeholder.
-    :param noise: indicator value of placeholder shape.
+    :param count: int, number of placeholders to return.
+    :param ph_name: str, name of placeholder.
+    :param noise: int, optional, indicator value of placeholder shape.
     :return: Returns a single or multiple placeholders.
     """
     placeholder = dict()
@@ -281,13 +281,13 @@ def multiPlaceholders(count, ph_name, noise=1):
 
 def multiDictFeed(args, dict_feed, in_ph, in_feed, comp_ph, comp_feed, stage):
     """
-    :param args: dictionary of arguments.
-    :param dict_feed: epoch feed being returned.
-    :param in_ph: starting point placeholder.
-    :param in_feed: starting point batch feed.
-    :param comp_ph: ground truth placeholder.
-    :param comp_feed: ground truth batch feed.
-    :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+    :param args: dict, dictionary of arguments.
+    :param dict_feed: dict, epoch feed being returned.
+    :param in_ph: tf.placeholder, starting point placeholder.
+    :param in_feed: dict, starting point batch feed.
+    :param comp_ph: tf.placeholder, ground truth placeholder.
+    :param comp_feed: dict, ground truth batch feed.
+    :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
     :return: Returns a single or multiple feeds of batches.
     """
     if args['num_comp'] > 1:
@@ -309,7 +309,7 @@ def multiDictFeed(args, dict_feed, in_ph, in_feed, comp_ph, comp_feed, stage):
 
 def calculateTarget(qualities):
     """
-    :param qualities: module quality scores.
+    :param qualities: list, module quality scores.
     :return: Returns target quality score.
     """
     filtered = qualities.copy()
@@ -321,9 +321,9 @@ def calculateTarget(qualities):
 
 def performanceTracker(start, string, index=None):
     """
-    :param start: time.time() start variable.
-    :param string: message to be used in logging.
-    :param index: secondary formatting.
+    :param start: time.time(), start time.
+    :param string: str, message to be used in logging.
+    :param index: str, secondary formatting.
     :return: Returns calculated performance and prints to log if above threshold.
     """
     end = time.time()
@@ -344,8 +344,8 @@ def tfConfigSetup():
 
 def createLog(location, string):
     """
-    :param location: location to create log in.
-    :param string: log name.
+    :param location: str, folder to create log in.
+    :param string: str, log name.
     :return: Returns a created log.
     """
     for handler in logging.root.handlers[:]:
@@ -358,7 +358,7 @@ def createLog(location, string):
 
 def getGpuMemory(gpu):
     """
-    :param gpu: the gpu index.
+    :param gpu: int, the gpu index.
     :return: Returns the total memory of the indexed Nvidia GPU using nvidia-smi.
     """
     command = "nvidia-smi --query-gpu=memory.total --format=csv"
@@ -372,7 +372,7 @@ def getGpuMemory(gpu):
 
 def initialization(sess):
     """
-    :param sess: tensorflow active session.
+    :param sess: tf.session(), tensorflow active session.
     :return: Returns the initialized tensorflow session.
     """
     coord = tf.train.Coordinator()
@@ -387,11 +387,11 @@ def initialization(sess):
 
 def preprocess(args, starting, ground, augmented, stage):
     """
-    :param args: dictionary of arguments.
-    :param starting: starting point images.
-    :param ground: ground truth images.
-    :param augmented: augmented pairs of ground truth images.
-    :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+    :param args: dict, dictionary of arguments.
+    :param starting: dict, starting point images.
+    :param ground: dict, ground truth images.
+    :param augmented: list, augmented pairs of ground truth images.
+    :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
     :return: This function returns the preprocessed image batches.
     """
     if stage != 1:

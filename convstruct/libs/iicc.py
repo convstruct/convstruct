@@ -4,12 +4,12 @@ from .util import *
 class IICC:
     def __init__(self, args, location, memory, repeats=5, bias_init=tf.constant_initializer(0.0), kernel_init=tf.initializers.variance_scaling(dtype=tf.float32)):
         """
-        :param args: dictionary of arguments.
-        :param location: path of directory to save weights and summaries to.
-        :param memory: changing string for the tf.variable scope of the classifier.
-        :param repeats: number of classifiers.
-        :param bias_init: initializer of classifier bias.
-        :param kernel_init: initializer of classifier kernel.
+        :param args: dict, dictionary of arguments.
+        :param location: str, path of directory to save weights and summaries to.
+        :param memory: str, changing string for the tf.variable scope of the classifier.
+        :param repeats: int, optional, number of classifiers.
+        :param bias_init: tf.constant_initializer(), optional, initializer of classifier bias.
+        :param kernel_init: tf.initializers.variance_scaling(), optional, initializer of classifier kernel.
         """
         self.args = args
         self.location = location
@@ -20,9 +20,9 @@ class IICC:
 
     def firstLayers(self, remember, learning, dim_size):
         """
-        :param remember: input data to classify.
-        :param learning: boolean for enabling or disabling batch normalization.
-        :param dim_size: dimension of input and output data.
+        :param remember: tf.placeholder, input data to classify.
+        :param learning: tf.bool, boolean for enabling or disabling batch normalization.
+        :param dim_size: int, dimension of input and output data.
         :return: This function returns the topology for the first layer of the classifier.
         """
         remember = (tf.concat(list(remember.values()), 3) if type(remember) is dict else tf.concat(remember, 3)) if self.args['num_comp'] > 1 else remember
@@ -38,9 +38,9 @@ class IICC:
 
     def getFirstLayers(self, remember, learning, growth):
         """
-        :param remember: input data to classify.
-        :param learning: boolean for enabling or disabling batch normalization.
-        :param growth: dictionary of info on input and output data.
+        :param remember: tf.placeholder, input data to classify.
+        :param learning: tf.bool, boolean for enabling or disabling batch normalization.
+        :param growth: dict, dictionary of info on input and output data.
         :return: This function returns the topology for the small cluster.
         """
         with tf.variable_scope(self.memory, reuse=tf.AUTO_REUSE):
@@ -49,9 +49,9 @@ class IICC:
 
     def getFullClassifier(self, remember, learning, dim_size):
         """
-        :param remember: input data to classify.
-        :param learning: boolean for enabling or disabling batch normalization.
-        :param dim_size: dimension of input and output data.
+        :param remember: tf.placeholder, input data to classify.
+        :param learning: tf.bool, boolean for enabling or disabling batch normalization.
+        :param dim_size: int, dimension of input and output data.
         :return: This function returns the topology for the full cluster.
         """
         with tf.variable_scope(self.memory, reuse=tf.AUTO_REUSE):
@@ -67,9 +67,9 @@ class IICC:
 
     def getClassifierLogits(self, input_pair, num_clusters, name):
         """
-        :param input_pair: the part of a pair from the ground truth images.
-        :param num_clusters: the number of clusters to classify images into.
-        :param name: identity of the current cluster.
+        :param input_pair: tf.placeholder, the part of a pair from the ground truth images.
+        :param num_clusters: int, the number of clusters to classify images into.
+        :param name: str, identity of the current cluster.
         :return: This function returns the logits of the pairing from the classifier's softmax output.
         """
         with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
@@ -78,11 +78,11 @@ class IICC:
 
     def getClassifierLoss(self, true_pair, aug_pair, num_clusters, num_heads, head):
         """
-        :param true_pair: the ground truth image.
-        :param aug_pair: an augmentation of the ground truth image.
-        :param num_clusters: the number of clusters to classify images into.
-        :param num_heads: the number of clustering attempts.
-        :param head: identity of the current cluster.
+        :param true_pair: tf.placeholder, the ground truth image.
+        :param aug_pair: tf.placeholder, an augmentation of the ground truth image.
+        :param num_clusters: int, the number of clusters to classify images into.
+        :param num_heads: int, the number of clustering attempts.
+        :param head: str, identity of the current cluster.
         :return: This function returns the loss function of the classifier.
         """
         loss = tf.constant(0, dtype=tf.float32)
@@ -102,7 +102,7 @@ class IICC:
 
     def getOptimizer(self, loss):
         """
-        :param loss: the classifier loss.
+        :param loss: tf.reduce_sum(), the classifier loss.
         :return: This function returns the optimizer of the classifier.
         """
         ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope=self.memory)
@@ -112,10 +112,10 @@ class IICC:
 
     def getGraph(self, augmented, ground, iicc_learning, growth):
         """
-        :param augmented: augmented pair created from ground truth image.
-        :param ground: ground truth image.
-        :param iicc_learning: boolean for enabling or disabling batch normalization.
-        :param growth: dictionary of info on input and output data.
+        :param augmented: tf.placeholder, augmented pair created from ground truth image.
+        :param ground: tf.placeholder, ground truth image.
+        :param iicc_learning: tf.bool, boolean for enabling or disabling batch normalization.
+        :param growth: dict, dictionary of info on input and output data.
         :return: This function graphs the IICC classifier and calculates and optimizes its loss.
         """
         start = time.time()

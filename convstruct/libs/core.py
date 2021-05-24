@@ -8,11 +8,11 @@ from .graphing import Graphing
 class Core:
     def __init__(self, args, location, iicc, specifications, growth):
         """
-        :param args: dictionary of arguments.
-        :param location: path of directory to save weights and summaries to.
-        :param iicc: classifier trained using convstruct.learn().
-        :param specifications: dictionary of convstruct settings and system details.
-        :param growth: dictionary of trained modules to reuse.
+        :param args: dict, dictionary of arguments.
+        :param location: str, path of directory to save weights and summaries to.
+        :param iicc: class, classifier trained using convstruct.learn().
+        :param specifications: dict, dictionary of convstruct settings and system details.
+        :param growth: dict, dictionary of trained modules to reuse.
         """
         self.args = args
         self.location = location
@@ -23,10 +23,10 @@ class Core:
 
     def createActiveGraphs(self, ground, iicc_learning, struct, stage):
         """
-        :param ground: ground truth images.
-        :param iicc_learning: boolean for enabling or disabling batch normalization in the iicc classifier.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param ground: tf.placeholder, ground truth images.
+        :param iicc_learning: tf.bool, boolean for enabling or disabling batch normalization in the iicc classifier.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns dictionaries of gpu batches of module and model training flows.
         """
         start, graph, disc, gen, graph_output, gpus, learning = time.time(), dict(), dict(), dict(), dict(), [], True if stage != 4 else False
@@ -55,9 +55,9 @@ class Core:
 
     def getEarlyClassification(self, iicc_learning, content, stage):
         """
-        :param iicc_learning: boolean for enabling or disabling batch normalization in the iicc classifier.
-        :param content: the image content to be classified.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param iicc_learning: tf.bool, boolean for enabling or disabling batch normalization in the iicc classifier.
+        :param content: tf.placeholder, the image content to be classified.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns the flattened early output from the small cluster of the content.
         """
         start = time.time()
@@ -72,9 +72,9 @@ class Core:
 
     def getModelEstimatorGraph(self, teacher, stage, quality=None):
         """
-        :param teacher: tensorflow placeholder for a graph feed.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
-        :param quality: tensorflow placeholder for a quality score pair for the matching graph feed.
+        :param teacher: tf.placeholder, tensorflow placeholder for a graph feed.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param quality: tf.placeholder, optional, tensorflow placeholder for a quality score pair for the matching graph feed.
         :return: This function returns the graph ops for the module estimator.
         """
         weight_1 = tf.Variable(tf.random_normal([self.size, 128], stddev=0.03), name="weight_1")
@@ -97,11 +97,11 @@ class Core:
 
     def getModelEstimation(self, teacher, module_type, live_ops, struct, gpu):
         """
-        :param teacher: tensorflow placeholder for a graph feed.
-        :param module_type: value indicator to identify between generator(1) and discriminator(2) modules.
-        :param live_ops: runs the inference on a graph feed to provide a score.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param gpu: the gpu index.
+        :param teacher: tf.placeholder, tensorflow placeholder for a graph feed.
+        :param module_type: int, value indicator to identify between generator(1) and discriminator(2) modules.
+        :param live_ops: graph, runs graph on a feed to provide a score.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param gpu: int, the gpu index.
         :return: This function returns the estimated quality of a modules output.
         """
         with tf.Session(config=tfConfigSetup()) as sess:
@@ -122,9 +122,9 @@ class Core:
 
     def createLatentModules(self, module_type, struct, gpu):
         """
-        :param module_type: value indicator to identify between generator(1) and discriminator(2) modules.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param gpu: the gpu index.
+        :param module_type: int, value indicator to identify between generator(1) and discriminator(2) modules.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param gpu: int, the gpu index.
         :return: This function returns two dictionaries to be used to create the modules in the active graph.
         """
         total_split, total_parameters = [], []
@@ -139,10 +139,10 @@ class Core:
 
     def getModelTopology(self, name, module_type, struct, gpu):
         """
-        :param name: string to indicate a generator or discriminator module.
-        :param module_type: value indicator to identify between generator(1) and discriminator(1) modules.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param gpu: the gpu index.
+        :param name: str, string to indicate a generator or discriminator module.
+        :param module_type: int, value indicator to identify between generator(1) and discriminator(1) modules.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param gpu: int, the gpu index.
         :return: This function returns the total ops of the generator or discriminator model and their topologies to a dictionary.
         """
         struct['%s_factor_%d' % (name, gpu)], struct['%s_ops_%d' % (name, gpu)] = self.buildTopology(struct['teacher_%d_parameters_%d' % (module_type, gpu)], int(struct['teacher_%d_module_%d' % (module_type, gpu)]) + 2, [struct['teacher_%d_split_%d' % (module_type, gpu)]], gpu, module_type)
@@ -150,11 +150,11 @@ class Core:
     
     def buildTopology(self, parameters, module_size, split, gpu, module_type):
         """
-        :param parameters: generated module topology array.
-        :param module_size: variable controlling total amount of latent module topology parameters.
-        :param split: variable sets y dimension of latent module topology.
-        :param gpu: the gpu index.
-        :param module_type: value indicator to identify between generator(1) and discriminator(2) modules.
+        :param parameters: float array, generated module topology array.
+        :param module_size: int, variable controlling total amount of latent module topology parameters.
+        :param split: int, variable sets y dimension of latent module topology.
+        :param gpu: int, the gpu index.
+        :param module_type: int, value indicator to identify between generator(1) and discriminator(2) modules.
         :return: This function returns the generated module topology array and forms the topology parameters.
         """
         start, factor, gpu_ops, counter, combined_factor, saved_concat = time.time(), dict(), 0, 0, 0, 0
@@ -205,10 +205,10 @@ class Core:
 
     def prepareGraph(self, module_type, struct, stage, gpu):
         """
-        :param module_type: value indicator to identify between generator(1) and discriminator(2) modules.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
-        :param gpu: the gpu index.
+        :param module_type: int, value indicator to identify between generator(1) and discriminator(2) modules.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param gpu: int, the gpu index.
         :return: This function returns the struct dictionary of created latent module topologies.
         """
         start, gpu_ops, live_ops = time.time(), 0, None
@@ -233,7 +233,7 @@ class Core:
 
     def getGraphs(self, stage):
         """
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns a batch of graphs that fit the memory of each gpu in use.
         """
         start = time.time()
@@ -263,9 +263,9 @@ class Core:
 
     def getClassification(self, eval_feed, struct, stage):
         """
-        :param eval_feed: dictionary of pairs of ground truth images and generated images.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param eval_feed: dict, dictionary of pairs of ground truth images and generated images.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns a classification score for all the generated images, using the IICC saved model.
         """
         tf.reset_default_graph()
@@ -322,9 +322,9 @@ class Core:
 
     def saveModelOutputs(self, eval_feed, gpu, stage):
         """
-        :param eval_feed: dictionary of pairs of ground truth images and generated images.
-        :param gpu: the gpu index.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param eval_feed: dict, dictionary of pairs of ground truth images and generated images.
+        :param gpu: int, the gpu index.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function saves the inferred images.
         """
         for i in range(self.growth['batch_size']):
@@ -336,7 +336,7 @@ class Core:
 
     def startEstimator(self, stage):
         """
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns a trained module estimator and an updated index.
         """
         tf.reset_default_graph()
@@ -377,8 +377,8 @@ class Core:
 
     def getSaver(self, sess, stage):
         """
-        :param sess: tensorflow active session.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param sess: tf.session(), tensorflow active session.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function returns the stage tf.train.Saver() and restores previous saved weights.
         """
         start = time.time()
@@ -396,16 +396,16 @@ class Core:
 
     def runGraphOps(self, sess, epoch, eval_feed, epochs_truth, struct, graph, models, epoch_feed, total_epochs, stage):
         """
-        :param sess: tensorflow active session.
-        :param epoch: current epoch in stage loop.
-        :param eval_feed: dictionary of pairs of ground truth images and generated images.
-        :param epochs_truth: ground truth image batch.
-        :param struct: dictionary of topology parameters to be fed to generator and discriminator modules.
-        :param graph: dictionary of all graph elements.
-        :param models: dictionary of all model elements.
-        :param epoch_feed: feed_dict to session.
-        :param total_epochs: total epochs in stage loop.
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param sess: tf.session(), tensorflow active session.
+        :param epoch: int, current epoch in stage loop.
+        :param eval_feed: dict, dictionary of pairs of ground truth images and generated images.
+        :param epochs_truth: list, ground truth image batch.
+        :param struct: dict, dictionary of topology parameters to be fed to generator and discriminator modules.
+        :param graph: dict, dictionary of all graph elements.
+        :param models: dict, dictionary of all model elements.
+        :param epoch_feed: dict, feed_dict to session.
+        :param total_epochs: int, total epochs in stage loop.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function runs the stage's training/inference.
         """
         start = time.time()
@@ -436,12 +436,12 @@ class Core:
 
     def stage_save(self, epoch, sess, draw, learn, first_learned, stage):
         """
-        :param epoch: current epoch in stage loop.
-        :param sess: tensorflow active session.
-        :param draw: stage 3 tf.train.saver().
-        :param learn: all variables stage 1 tf.train.saver().
-        :param first_learned: first layer variables stage 1 tf.train.saver()
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param epoch: int, current epoch in stage loop.
+        :param sess: tf.session(), tensorflow active session.
+        :param draw: tf.train.saver(), draw's (stage 3) saver.
+        :param learn: tf.train.saver(), learn's (stage 1) saver.
+        :param first_learned: tf.train.saver(), only variables from first layers in learn's (stage 1) saver.
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return:
         """
         start = time.time()
@@ -468,7 +468,7 @@ class Core:
 
     def runStage(self, stage):
         """
-        :param stage: value indicator to identify between learn(1), live(2), and draw(3/4).
+        :param stage: int, value indicator to identify between learn(1), live(2), and draw(3/4).
         :return: This function runs the specified stage.
         """
         main_start = time.time()
