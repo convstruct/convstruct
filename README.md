@@ -3,7 +3,9 @@
 <br>
 <br>
 
-<img align="center" width="350" height="200" src="https://i.ibb.co/4Zf5mvG/logo.png" alt="convstruct-github-logo" border="0">
+<div align="center">
+   <img width="350" height="200" src="https://i.ibb.co/4Zf5mvG/logo.png" alt="convstruct-github-logo" border="0">
+</div>
 
 <br>
 <br>
@@ -12,13 +14,13 @@
 
 ---
 
-[<img align="center" src="https://i.ibb.co/zmFZZDW/hero-banner.png" alt="convstruct-hero-banner" border="0">](###Convstruct-roadmap)
+[<img src="https://i.ibb.co/zmFZZDW/hero-banner.png" alt="convstruct-hero-banner" border="0">](#convstruct-roadmap)
 
 ---
 
 <br>
 
-###Convstruct 1.1 is here :zap: :zap:
+### Convstruct 1.1 is here :zap: :zap:
 
 1.1 is an architecture update as well as the addition of reinforcement learning to the topology search. </br>
 [View full release notes](https://convstruct.org)
@@ -48,7 +50,7 @@ Convstruct is an open source Python framework, containing four functions to crea
 
 Convstruct, **cs**, seamlessly works alongside Tensorflow, **tf**, when your creating your AI models. Code your loss function and optimizer and let Convstruct do the rest.
 
-<img align="center" src="https://i.ibb.co/QjHf2vv/main-2.png" alt="convstruct-functions-banner" border="0">
+[<img src="https://i.ibb.co/QjHf2vv/main-2.png" alt="convstruct-functions-banner" border="0">](https://www.github.com/convstruct/convstruct/demos/)
 
 <br>
 
@@ -56,13 +58,13 @@ Convstruct, **cs**, seamlessly works alongside Tensorflow, **tf**, when your cre
 
 <br>
 
-###Getting started with the python package?
+### Getting started with the python package?
 
 • Install using pip: `pip install convstruct` <br>
 • Import Convstruct inside your python file.
 
 
-###Getting started with the codebase?
+### Getting started with the codebase?
 
 • Clone this repo to your local machine using `https://github.com/convstruct/convstruct` <br>
 • Run `pip install requirements.text` in the cloned repo to make sure all Convstruct dependencies are installed on your local machine. <br>
@@ -75,10 +77,10 @@ Convstruct, **cs**, seamlessly works alongside Tensorflow, **tf**, when your cre
 
 ---
 
-###Convstruct roadmap
+## Convstruct roadmap
 The roadmap provides a high-level visual of what has been done and what is planned next for Convstruct.
 
-<img align="center" src="https://i.ibb.co/RCcntFy/main-3.png" alt="convstruct-roadmap-banner" border="0">
+[<img src="https://i.ibb.co/RCcntFy/main-3.png" alt="convstruct-roadmap-banner" border="0">](https://www.github.com/convstruct/convstruct/evaluator/)
 
 <br>
 <br>
