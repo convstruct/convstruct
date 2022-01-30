@@ -5,8 +5,8 @@
 
 <div align="center">
 
-#The Evaluator
-####Evaluates, Scores, and Recommends Topologies
+  # The Evaluator
+  #### Evaluates, Scores, and Recommends Topologies
 
 </div>
 
@@ -19,7 +19,7 @@
 
 <br>
 
-###Convstruct 1.1 is here :zap: :zap:
+### Convstruct 1.1 is here :zap: :zap:
 
 1.1 highlights the Evaluator by separating it from the rest of the Convstruct codebase giving it an individual section. </br>
 [View full release notes](https://convstruct.org)
