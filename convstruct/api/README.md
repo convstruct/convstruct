@@ -49,7 +49,7 @@ The API’s purpose is to provide functionality to the main functions that can b
 
 cs.core contains the functionality to get the topologies, by randomizing parameters and setting them into topologies, and the functionality to take those topologies and set them into graphs.
 
-[<img align="center" src="https://i.ibb.co/RPy7yJM/api-banner-1.png" alt="api-banner-1" border="0">](https://arxiv.org/abs/1807.06653)
+[<img align="center" src="https://i.ibb.co/RPy7yJM/api-banner-1.png" alt="api-banner-1" border="0">](https://github.com/convstruct/convstruct/tree/main/convstruct/evaluator)
 
 <br>
 
@@ -57,7 +57,7 @@ cs.core contains the functionality to get the topologies, by randomizing paramet
 
 cs.ops contains a variety of loss functions and optimizers to be used with topologies. The main function, cs.createOps, requires one of the loss functions and one of the optimizers within cs.ops to create the ops to be fed to tf.session.run.
 
-<img align="center" src="https://i.ibb.co/8bPp6Z5/api-banner-2.png" alt="api-banner-2" border="0">
+[<img align="center" src="https://i.ibb.co/8bPp6Z5/api-banner-2.png" alt="api-banner-2" border="0">](https://github.com/convstruct/convstruct/blob/main/convstruct/api/__init__.py)
 
 <br>
 <br>
