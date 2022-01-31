@@ -50,7 +50,7 @@ Convstruct is an open source Python framework, containing four functions to crea
 
 Convstruct, **cs**, seamlessly works alongside Tensorflow, **tf**, when your creating your AI models. Code your loss function and optimizer and let Convstruct do the rest.
 
-[<img src="https://i.ibb.co/QjHf2vv/main-2.png" alt="convstruct-functions-banner" border="0">](https://www.github.com/convstruct/convstruct/tree/main/convstruct/demos/)
+[<img src="https://i.ibb.co/QjHf2vv/main-2.png" alt="convstruct-functions-banner" border="0">](https://github.com/convstruct/convstruct/tree/main/demos/)
 
 <br>
 
