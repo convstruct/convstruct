@@ -22,7 +22,7 @@
 ### Convstruct 1.1 is here :zap: :zap:
 
 1.1 introduces a new section, API, that makes up the core of import Convstruct. Also introduced is a new way to add custom ops.
-[View release notes](https://convstruct.org)
+[View release notes](https://github.com/convstruct/convstruct/releases/tag/1.1.0)
 
 <br>
 
