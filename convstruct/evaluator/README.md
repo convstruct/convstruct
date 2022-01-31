@@ -46,7 +46,7 @@ The Evaluator’s purpose is to learn to search and train a topology in a set am
 
 The evaluator is a part of the main Convstruct function cs.createEpisode. The function takes the macro architecture fed to the function and returns an episode loop.
 
-[<img align="center" src="https://i.ibb.co/9tPMDNw/eval-1.png" alt="evaluator-banner-1" border="0">](https://arxiv.org/abs/1807.06653)
+[<img align="center" src="https://i.ibb.co/9tPMDNw/eval-1.png" alt="evaluator-banner-1" border="0">](https://github.com/convstruct/convstruct/blob/main/convstruct/api/__init__.py)
 
 <br>
 
@@ -54,7 +54,7 @@ The evaluator is a part of the main Convstruct function cs.createEpisode. The fu
 
 During the episode loop, after an epoch of training occurs an evaluation of the current topology output compared to the ground truth data takes place. This is built into the cs.Evaluator.getScore function.
 
-<img align="center" src="https://i.ibb.co/znfYVkm/eval-2.png" alt="evaluator-banner-2" border="0">
+[<img align="center" src="https://i.ibb.co/znfYVkm/eval-2.png" alt="evaluator-banner-2" border="0">](https://arxiv.org/abs/1807.06653)
 
 Along with the evaluation between output and data, a secondary evaluation is done on weights of each layer compared to its previous values. If a topology is bad, a layer will show up as having basically no change between current and previous weight values (scaled against other layers).
 
@@ -68,7 +68,7 @@ Along with the evaluation between output and data, a secondary evaluation is don
 
 In the episode loop, the cs.Evaluator.getAction function returns a random chosen action at first, but as training continues, it switches to the Evaluator’s chosen action, using an MLP model.
 
-[<img align="center" src="https://i.ibb.co/ZmQPPd0/eval-2.png" alt="evaluator-banner-3" border="0">](https://arxiv.org/pdf/1701.04968.pdf)
+[<img align="center" src="https://i.ibb.co/ZmQPPd0/eval-2.png" alt="evaluator-banner-3" border="0">](https://github.com/convstruct/convstruct/blob/main/convstruct/api/__init__.py)
 
 
 > The rewards provided at every checkpoint are broken down as followed: <br>
