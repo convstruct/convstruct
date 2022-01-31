@@ -1,14 +1,18 @@
 import sys
 import os
+from os import path
 current_file_path = os.path.dirname(__file__).split("/")[:-1]
 sys.path.append("/".join(current_file_path))
-from convstruct.libs.util import *
-from convstruct.libs.iicc import IICC
-from convstruct.libs.core import Core
+import convstruct as cs
+import tensorflow as tf
+import numpy as np
+from PIL import Image
 import shutil
 import unittest
 
-# -----To repress Tensorflow deprecation warnings----- #
+
+# ----- To repress Tensorflow deprecation warnings ----- #
+from warnings import simplefilter
 simplefilter(action='ignore', category=FutureWarning)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 old_v = tf.compat.v1.logging.get_verbosity()
@@ -17,112 +21,79 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 class Test(unittest.TestCase):
     def test_a_build_log_dir(self):
-        if os.path.exists(os.path.join('tests', 'void')):
-            shutil.rmtree(os.path.join('tests', 'void'))
-        if os.path.exists(os.path.join('tests', 'test_void')):
-            shutil.rmtree(os.path.join('tests', 'test_void'))
-        if os.path.exists(os.path.join('data', 'test_comp_data')):
-            shutil.rmtree(os.path.join('data', 'test_comp_data'))
-        if os.path.exists(os.path.join('data', 'test_input_data')):
-            shutil.rmtree(os.path.join('data', 'test_input_data'))
-        buildLogDir('tests', 'void')
-        buildLogDir('data', 'test_input_data')
-        buildLogDir('data', 'test_comp_data')
-        self.assertTrue(path.exists('tests/void'))
-        self.assertTrue(path.exists('data/test_input_data'))
-        self.assertTrue(path.exists('data/test_comp_data'))
+        if os.path.exists(os.path.join('tests', '8to64')):
+            shutil.rmtree(os.path.join('tests', '8to64'))
+        if os.path.exists(os.path.join('tests', 'test_data')):
+            shutil.rmtree(os.path.join('tests', 'test_data'))
+        os.makedirs(os.path.join('tests', '8to64'))
+        os.makedirs(os.path.join('tests', 'test_data'))
+        os.makedirs(os.path.join(os.path.join('tests', '8to64'), 'temp'))
+        self.assertTrue(path.exists('tests/test_data'))
+        return
 
-    def test_b_create_log(self):
-        createLog(os.path.join('tests', 'void'), 'unittest.log')
-        self.assertTrue(path.exists('tests/void/unittest.log'))
+    def test_b_create_batch(self):
+        for i in range(32):
+            random_values = np.random.rand(64, 64, 3) * 255
+            Image.fromarray(random_values.astype(np.uint8)).save('tests/test_data/img_%d.png' % i)
+        get_batch_random = cs.createBatch(os.path.join('tests', 'test_data'), [64, 64, 3], 4, shuffle=False)
+        real_png = np.asarray(Image.open('tests/test_data/img_0.png'))
+        with tf.Session() as sess:
+            get_next = cs.initBatch(get_batch_random, sess)
+            sess.run(tf.local_variables_initializer())
+            sess.run(tf.global_variables_initializer())
+            img_png_out = sess.run(get_next)
+            converted = img_png_out.astype(int)
+        self.assertTrue((real_png == converted[0]).all())
+        return
 
-    def test_c_prepare_image(self):
-        created_image = Image.fromarray((np.random.rand(64, 64, 3) * 255).astype(np.uint8))
-        created_nonint_image = Image.fromarray((np.random.rand(64, 64, 3) * 255).astype(np.uint8))
-        created_small_image = Image.fromarray((np.random.rand(64, 64, 3) * 255).astype(np.uint8))
-        created_reshape_input_image = Image.fromarray((np.random.rand(256, 256, 3) * 255).astype(np.uint8))
-        created_reshape_output_image = Image.fromarray((np.random.rand(256, 256, 3) * 255).astype(np.uint8))
-        created_prime_input_image = Image.fromarray((np.random.rand(129, 129, 3) * 255).astype(np.uint8))
-        created_prime_output_image = Image.fromarray((np.random.rand(129, 129, 3) * 255).astype(np.uint8))
-        created_image.save('data/test_comp_data/test_output.png')
-        created_image.save('data/test_input_data/test_input.png')
-        created_image.save('data/test_comp_data/test_output.jpeg')
-        created_image.save('data/test_comp_data/test_output.bmp')
-        created_nonint_image.save('data/test_comp_data/test_nonint_output.png')
-        created_small_image.save('data/test_input_data/test_small_input.png')
-        created_small_image.save('data/test_comp_data/test_small_output.png')
-        created_prime_input_image.save('data/test_input_data/test_prime_input.png')
-        created_prime_output_image.save('data/test_comp_data/test_prime_output.png')
-        created_reshape_input_image.save('data/test_input_data/test_reshape_input.png')
-        created_reshape_output_image.save('data/test_comp_data/test_reshape_output.png')
-        self.assertTrue(path.exists('data/test_comp_data/test_output.png'))
-        self.assertTrue(path.exists('data/test_input_data/test_input.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_nonint_output.png'))
-        self.assertTrue(path.exists('data/test_input_data/test_small_input.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_small_output.png'))
-        self.assertTrue(path.exists('data/test_input_data/test_prime_input.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_prime_output.png'))
-        self.assertTrue(path.exists('data/test_input_data/test_reshape_input.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_reshape_output.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_output.jpeg'))
-        self.assertTrue(path.exists('data/test_comp_data/test_output.bmp'))
+    def test_c_create_topology(self):
+        topology = cs.createTopology([4, 8, 64, 3, 3], location='tests', name='8to64')
+        assert "8to64_output_node_0" in topology
+        return
 
-    def test_d_process_image(self):
-        img_png = processImage(100, 2, 'data/test_comp_data/test_output.png', 64, 64)
-        img_jpg = processImage(100, 2, 'data/test_comp_data/test_output.jpeg', 64, 64)
-        img_bmp = processImage(100, 2, 'data/test_comp_data/test_output.bmp', 64, 64)
-        sess = tf.Session(config=tfConfigSetup())
-        res_png, res_jpg, res_bmp = sess.run([img_png, img_jpg, img_bmp])
-        Image.fromarray(res_png.astype(np.uint8)).save('data/test_comp_data/test_result_output.png')
-        Image.fromarray(res_jpg.astype(np.uint8)).save('data/test_comp_data/test_result_output.jpeg')
-        Image.fromarray(res_bmp.astype(np.uint8)).save('data/test_comp_data/test_result_output.bmp')
-        self.assertTrue(path.exists('data/test_comp_data/test_result_output.png'))
-        self.assertTrue(path.exists('data/test_comp_data/test_result_output.jpeg'))
-        self.assertTrue(path.exists('data/test_comp_data/test_result_output.bmp'))
+    def test_d_create_graph(self):
+        topology = np.load(os.path.join(os.path.join(os.path.join('tests', '8to64'), 'temp'), 'topology.npy')).flat[0]
+        input_ph = tf.placeholder(tf.float32, [None, 8, 8, 3], name='input_ph')
+        training_ph = tf.placeholder(tf.bool, name='training')
+        real_ph = tf.placeholder(tf.float32, [None, 64, 64, 3], name='real_ph')
+        graph = cs.createGraph(input_ph, topology, [None, 8, 8, 3], training_ph, location='tests', name='8to64', real=real_ph)
+        assert "8to64_output_0" in graph
+        return topology, input_ph, training_ph, graph
 
-    def test_e_convstruct_start(self):
-        # To test starting points use this in indir: 'data/test_input_data'
-        set_args = {'num_comp': 1, 'num_in': 1, 'name': "void", 'num_type': "random", 'indir': None, 'compdir': 'data/test_comp_data', 'console': True}
-        location = buildLogDir('tests', set_args['name'])
-        specifications, growth = startSession(set_args, location)
-        specifications['total_epoch_count'], specifications['max_filter_size'], specifications['max_kernel_size'], specifications['max_stride_size'], specifications['num_gpus'] = 10, 32, 3, 2, 1
-        growth['initial_length'], growth['estimator_length'], growth['iicc_length'], growth['full_length'], growth['model_target'] = 10, 100, 50, 50, 0
-        learn = IICC(set_args, location, 'learn')
-        core = Core(set_args, location, learn, specifications, growth)
-        return set_args, location, specifications, growth, core
+    def test_e_create_ops(self):
+        _, _, _, graph = self.test_d_create_graph()
+        graph = cs.createOps(graph, '8to64', loss=cs.mseLoss, optimizer=cs.adamOp, name='8to64')
+        assert "8to64_ops_0" in graph
+        return
 
-    def test_f_convstruct_learn(self):
+    def test_f_clean_test(self):
+        shutil.rmtree(os.path.join('tests', os.path.join('8to64', 'temp')))
+        os.makedirs(os.path.join('tests', os.path.join('8to64', 'temp')))
         tf.reset_default_graph()
-        args, location, specifications, growth, core = self.test_e_convstruct_start()
-        core.runStage(stage=1)
-        return self.assertTrue(os.path.exists('tests/void/iicc/learn.ckpt.meta'))
+        return
 
-    def test_g_convstruct_live(self):
-        args, location, specifications, growth, core = self.test_e_convstruct_start()
-        if specifications['gpus'] < specifications['num_gpus']:
-            specifications['gpus'] = specifications['num_gpus']
-            specifications['multi_gpu_test'] = True
-            for batch in range(specifications['gpus']):
-                specifications['max_memory_%d' % batch] = specifications['max_memory_0']
-        while True:
-            if specifications['live_learning']:
-                core.runStage(stage=2)
-            else:
-                break
-        return self.assertTrue(os.path.exists('tests/void/live.ckpt.meta'))
+    def test_f_create_episode(self):
+        def setup(memory, topology):
+            if topology is None:
+                self.test_c_create_topology()
+            topology, input_ph, training_ph, graph = self.test_d_create_graph()
+            phs = [input_ph, training_ph]
+            batch = cs.createBatch(os.path.join('tests', 'test_data'), [64, 64, 3], batch_size=4)
+            return phs, topology, graph, batch
 
-    def test_h_convstruct_draw_a(self):
-        args, location, specifications, growth, core = self.test_e_convstruct_start()
-        core.runStage(stage=3)
-        self.assertTrue(not growth['draw_learning'])
-        self.assertTrue(growth['saved_epoch'] != 0)
-        return self.assertTrue(os.path.exists('tests/void/draw/draw.ckpt.meta'))
+        def epoch(action, sess, phs, graph, batch):
+            loss = [np.random.rand(1).astype(np.float32)]
+            evaluate = {'0': []}
+            for _ in range(100):
+                input_batch = np.random.rand(4, 64, 64, 3).astype(np.float32) * 255
+                y_out = np.random.rand(4, 64, 64, 3).astype(np.float32) * 255
+                evaluate['0'].append([input_batch, y_out])
+            return evaluate, loss
 
-    def test_i_convstruct_draw_b(self):
-        tf.reset_default_graph()
-        args, location, specifications, growth, core = self.test_e_convstruct_start()
-        core.runStage(stage=4)
-        self.assertTrue(path.exists('tests/void/draw/final_output_1_1.png'))
+        for _ in range(2):
+            cs.createEpisode(setup, epoch, location='tests', name='8to64', dims=[4, 64, 64, 3], limit=20000)
+        self.assertTrue(path.exists('tests/8to64/evaluator/score.ckpt.meta'))
+        return
 
 
 if __name__ == '__main__':
