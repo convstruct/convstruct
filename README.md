@@ -23,7 +23,7 @@
 ### Convstruct 1.1 is here :zap: :zap:
 
 1.1 is an architecture update as well as the addition of reinforcement learning to the topology search. </br>
-[View full release notes](https://convstruct.org)
+[View full release notes](https://github.com/convstruct/convstruct/releases/tag/1.1.0)
 
 <br>
 
